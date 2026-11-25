@@ -1,0 +1,40 @@
+# macOS / OS metadata
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+
+# Synopsys VCS / Verdi outputs
+simv
+simv.*
+csrc/
+*.daidir/
+*.vdb/
+urgReport*/
+merged_dir/
+verdiLog/
+novas.*
+*.fsdb
+*.vpd
+*.key
+*.tmp
+*hdrs.h
+AN.DB/
+DVEfiles/
+
+# Mentor QuestaSim outputs
+work/
+modelsim.ini
+transcript*
+*.wlf
+wlft*
+covhtmlreport*/
+mem_cov*
+fcover*
+
+# Simulation logs & temporary files
+*.log
+*.bak
+*.swp
+*~
