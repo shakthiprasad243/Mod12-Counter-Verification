@@ -14,7 +14,7 @@ module mod12_counter (mod_12_if.DUT intf );
             if (intf.count == 4'd11)
                 intf.count <= 4'd0;
             else
-                intf.count = intf.count+1;
+                intf.count <= intf.count + 4'd1;
         end
 
         else begin

@@ -11,7 +11,7 @@ Mod_12_Counter/
 ├── rtl/
 │   └── counter.sv                      # Mod-12 counter RTL (mod12_counter)
 ├── env_lib/
-│   ├── interface.sv                    # mod_12_if with clocking blocks & modports
+│   ├── interface.sv                    # mod_12_if with clocking blocks, modports & SVA
 │   ├── trans.sv                        # mod12_trans transaction & constraints
 │   ├── gen.sv                          # mod12_gen stimulus generator
 │   ├── wr_drv.sv                       # write_drv pin-level driver
@@ -33,6 +33,7 @@ Mod_12_Counter/
 ├── Verification_Plan.md                # Full verification plan & feature matrix
 ├── Wave_VCS.png                        # VCS / Verdi waveform capture
 ├── Wave_Questa.png                     # QuestaSim waveform capture
+├── .gitignore                          # Excludes simulator, coverage & OS artifacts
 └── README.md                           # Project overview
 ```
 
@@ -83,6 +84,7 @@ Mod_12_Counter/
 
 - **Constrained-Random Stimulus:** `mod12_trans` randomizes `rst`, `load`, `mode`, and `data_in` (`0..11`), sequencing 12 down-count transactions followed by 12 up-count transactions.
 - **Self-Checking Scoreboard:** Compares DUT output (`read_mon`) against the golden `ref_model` (`===`) and samples `mod12_cg`.
+- **SystemVerilog Assertions (SVA):** Embedded in `mod_12_if` ([`env_lib/interface.sv`](env_lib/interface.sv)) to verify synchronous reset priority, parallel load, up-count rollover (`11` $\rightarrow$ `0`), down-count underflow (`0` $\rightarrow$ `11`), step increment/decrement, and valid count bounds (`0`–`11`).
 - **Functional Coverage (`mod12_cg`):** Tracks `RESET`, `MODE`, `LOAD`, `DATA_IN`, `COUNT`, illegal out-of-range bins (`[12:15]`), and `COUNT2` (`cross MODE, COUNT`).
 
 ---
@@ -129,5 +131,9 @@ make view_wave_Questa  # Open wave_file1.wlf in QuestaSim
 ### Synopsys VCS / Verdi
 ![VCS Waveform](Wave_VCS.png)
 
+*Figure 1: VCS / Verdi waveform (`0`–`235 ns`) showing initial parallel load (`9`), down-counting (`mode = 0`: `9` $\rightarrow$ `8` $\rightarrow$ `7` and `5` $\rightarrow$ `4` $\rightarrow$ `3` $\rightarrow$ `2` $\rightarrow$ `1`), synchronous reset recovery (`rst = 1` $\rightarrow$ `count = 0`), and up-counting (`mode = 1`: `1` $\rightarrow$ `2` $\rightarrow$ `3` $\rightarrow$ `4` and `2` $\rightarrow$ `3` $\rightarrow$ `4` $\rightarrow$ `5` $\rightarrow$ `6`) with interleaved parallel loads.*
+
 ### Mentor QuestaSim
 ![QuestaSim Waveform](Wave_Questa.png)
+
+*Figure 2: QuestaSim waveform (`0`–`235 ns`, cursor at `115 ns`) showing clocking-block stimulus (`wr_drv_cb`, `wr_mon_cb`, `rd_mon_cb`), down-counting (`mode = 0`), parallel loads (`7`, `5`, `6`, `2`, `8`, `6`), and up-counting (`mode = 1`) including the Mod-12 rollover from `4'hb` (`11`) to `4'h0` (`0`) around `175`–`185 ns`.*

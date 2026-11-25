@@ -60,7 +60,7 @@ The testbench (`env/env.sv`, `env_lib/`, `test/`) follows a modular, mailbox-dri
 ### Component Breakdown
 | Component | File | Responsibility |
 | :--- | :--- | :--- |
-| **Interface** | `env_lib/interface.sv` | Defines `wr_drv_cb`, `wr_mon_cb`, `rd_mon_cb` (`default input #1 output #1`) and modports (`WR_DRV`, `WR_MON`, `RD_MON`, `DUT`). |
+| **Interface** | `env_lib/interface.sv` | Defines `wr_drv_cb`, `wr_mon_cb`, `rd_mon_cb` (`default input #1 output #1`), modports (`WR_DRV`, `WR_MON`, `RD_MON`, `DUT`), and SVA protocol assertions. |
 | **Transaction** | `env_lib/trans.sv` | `mod12_trans` encapsulates `rst`, `mode`, `load`, `data_in`, `count` with constrained randomization. |
 | **Generator** | `env_lib/gen.sv` | `mod12_gen` randomizes `no_of_transactions` (`24` in `test/package.sv`) and puts them into `gen2wr`. |
 | **Write Driver** | `env_lib/wr_drv.sv` | `write_drv` drives `rst`, `mode`, `load`, `data_in` onto `wr_drv_cb` on each clock edge. |
@@ -86,14 +86,14 @@ Constrained-random stimulus is defined in `mod12_trans` (`env_lib/trans.sv`):
 
 | ID | Feature / Scenario | Stimulus Condition | Expected Behavior | Verification Method |
 | :---: | :--- | :--- | :--- | :--- |
-| **F1** | Synchronous Reset | `rst == 1` (regardless of `load`, `mode`, `data_in`) | `count` resets to `4'd0` on next `posedge clk` | Scoreboard (`sb`) + `RESET` coverpoint |
-| **F2** | Parallel Load | `rst == 0`, `load == 1`, `data_in in [0:11]` | `count` loads `data_in` on next `posedge clk` | Scoreboard (`sb`) + `LOAD`, `DATA_IN` coverpoints |
-| **F3** | Up-Count Increment | `rst == 0`, `load == 0`, `mode == 1`, `count < 11` | `count` increments by `1` | Scoreboard (`sb`) + `MODE`, `COUNT` coverpoints |
-| **F4** | Up-Count Rollover | `rst == 0`, `load == 0`, `mode == 1`, `count == 11` | `count` wraps to `4'd0` | Scoreboard (`sb`) + `COUNT2` cross |
-| **F5** | Down-Count Decrement | `rst == 0`, `load == 0`, `mode == 0`, `count > 0` | `count` decrements by `1` | Scoreboard (`sb`) + `MODE`, `COUNT` coverpoints |
-| **F6** | Down-Count Underflow | `rst == 0`, `load == 0`, `mode == 0`, `count == 0` | `count` wraps to `4'd11` | Scoreboard (`sb`) + `COUNT2` cross |
-| **F7** | Priority Arbitration | Simultaneous `rst=1, load=1` or `load=1, mode=0/1` | `rst` overrides `load`; `load` overrides `mode` | Constrained-random overlap + Scoreboard (`sb`) |
-| **F8** | Out-of-Range Guard | `data_in` or `count` in `[12:15]` | Illegal bins in `DATA_IN` and `COUNT` must never hit | `illegal_bins` in `mod12_cg` |
+| **F1** | Synchronous Reset | `rst == 1` (regardless of `load`, `mode`, `data_in`) | `count` resets to `4'd0` on next `posedge clk` | Scoreboard (`sb`) + `RESET` coverpoint + `p_reset_priority` SVA |
+| **F2** | Parallel Load | `rst == 0`, `load == 1`, `data_in in [0:11]` | `count` loads `data_in` on next `posedge clk` | Scoreboard (`sb`) + `LOAD`, `DATA_IN` coverpoints + `p_parallel_load` SVA |
+| **F3** | Up-Count Increment | `rst == 0`, `load == 0`, `mode == 1`, `count < 11` | `count` increments by `1` | Scoreboard (`sb`) + `MODE`, `COUNT` coverpoints + `p_up_increment` SVA |
+| **F4** | Up-Count Rollover | `rst == 0`, `load == 0`, `mode == 1`, `count == 11` | `count` wraps to `4'd0` | Scoreboard (`sb`) + `COUNT2` cross + `p_up_rollover` SVA |
+| **F5** | Down-Count Decrement | `rst == 0`, `load == 0`, `mode == 0`, `count > 0` | `count` decrements by `1` | Scoreboard (`sb`) + `MODE`, `COUNT` coverpoints + `p_down_decrement` SVA |
+| **F6** | Down-Count Underflow | `rst == 0`, `load == 0`, `mode == 0`, `count == 0` | `count` wraps to `4'd11` | Scoreboard (`sb`) + `COUNT2` cross + `p_down_underflow` SVA |
+| **F7** | Priority Arbitration | Simultaneous `rst=1, load=1` or `load=1, mode=0/1` | `rst` overrides `load`; `load` overrides `mode` | Constrained-random overlap + Scoreboard (`sb`) + SVA |
+| **F8** | Out-of-Range Guard | `data_in` or `count` in `[12:15]` | Illegal bins in `DATA_IN` and `COUNT` must never hit | `illegal_bins` in `mod12_cg` + `p_valid_count_range` SVA |
 
 ---
 
@@ -131,6 +131,4 @@ The project supports both **Synopsys VCS / Verdi** and **Mentor QuestaSim** via 
 ---
 
 ## 9. Recommended Future Enhancements
-1. **RTL Coding Style Fix:** Line 17 of `rtl/counter.sv` uses a blocking assignment (`intf.count = intf.count + 1;`) inside `always_ff`; update to non-blocking (`<=`) for strict synthesis/simulation safety.
-2. **Enable Cross Coverage:** Uncomment `MODE_LOAD` and `RESET_LOAD` crosses in `env_lib/sb.sv` to explicitly track priority-override combinations.
-3. **SVA Assertions:** Add SystemVerilog Assertions in `mod_12_if` to check reset priority, valid `count <= 11` bounds, and rollover transitions directly at the interface.
+1. **Enable Cross Coverage:** Uncomment `MODE_LOAD` and `RESET_LOAD` crosses in `env_lib/sb.sv` to explicitly track priority-override combinations.
