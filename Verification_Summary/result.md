@@ -1,3 +1,36 @@
+# Mod-12 Counter — Verification Results
+
+## Run Summary
+
+| Metric | Value |
+| :--- | :--- |
+| **Simulator** | Synopsys VCS `T-2022.06-SP1_Full64` |
+| **Testcase** | `+TEST1` (`+ntb_random_seed=4137323363`) |
+| **Total Data Verified** | `24` |
+| **Pass Count** | `24` |
+| **Fail Count** | `0` |
+| **Functional Coverage** | `100.00%` |
+| **Simulation End Time** | `235` (`../test/test.sv:32`) |
+| **CPU Time** | `0.340 seconds` |
+
+---
+
+## Waveform Captures
+
+### Synopsys VCS / Verdi (`Wave_VCS.png`)
+![VCS Waveform](../Wave_VCS.png)
+
+### Mentor QuestaSim (`Wave_Questa.png`)
+![QuestaSim Waveform](../Wave_Questa.png)
+
+---
+
+## Full Simulation Log
+
+<details>
+<summary>Click to expand full VCS simulation transcript (958 lines)</summary>
+
+```text
 Command: /simv -a vcs.log +fsdbfile+wave_file1.fsdb -cm_dir ./cov1 +ntb_random_seed=4137323363 +TEST1
 Chronologic VCS simulator copyright 1991-2022
 Contains Synopsys proprietary information.
@@ -956,3 +989,6 @@ $finish at simulation time                  235
 Time: 235
 CPU Time:      0.340 seconds;       Data structure size:   0.0Mb
 Wed Nov 25 22:22:55 2026
+```
+
+</details>
